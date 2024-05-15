@@ -1,0 +1,251 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang1033{\fonttbl{\f0\fnil\fcharset0 Times New Roman;}{\f1\fnil\fcharset0 Calibri;}}
+{\colortbl ;\red0\green0\blue255;}
+{\*\generator Riched20 10.0.22621}\viewkind4\uc1 
+\pard\sa200\sl276\slmult1\f0\fs24\lang9 ### Sunbase Assignment: Building a Basic RAG Model AI Chatbot\par
+\par
+This project involves creating a Retrieval-Augmented Generation (RAG) model AI chatbot using open-source tools. It will use a Vector Database for storing embeddings and will have a Java backend with a simple HTML/CSS/JS frontend. Here\rquote s a step-by-step guide on how to build this project:\par
+\par
+### Project Structure\par
+\par
+1. **Frontend:**\par
+   - HTML/CSS/JS for the user interface.\par
+   - Pages for uploading documents/text and a basic chat interface.\par
+\par
+2. **Backend:**\par
+   - Java for API development.\par
+   - APIs for uploading text/files, converting text to embeddings, and handling chat queries.\par
+\par
+3. **Database:**\par
+   - Zilliz/Supabase or any Vector DB for storing embeddings.\par
+\par
+### Step-by-Step Implementation\par
+\par
+#### 1. Setup the Repository\par
+Create a new public repository on GitHub and clone it to your local machine.sh\par
+git clone {{\field{\*\fldinst{HYPERLINK https://github.com/yourusername/rag-chatbot.git }}{\fldrslt{https://github.com/yourusername/rag-chatbot.git\ul0\cf0}}}}\f0\fs24\par
+cd rag-chatbot\par
+#### 2. Frontend Development\par
+Create a simple HTML/CSS/JS interface.\par
+\par
+**index.html**html\par
+<!DOCTYPE html>\par
+<html lang="en">\par
+<head>\par
+    <meta charset="UTF-8">\par
+    <title>RAG Chatbot</title>\par
+    <link rel="stylesheet" href="styles.css">\par
+</head>\par
+<body>\par
+    <div id="upload-section">\par
+        <h2>Upload Document/Text</h2>\par
+        <input type="file" id="fileInput">\par
+        <button onclick="uploadFile()">Upload</button>\par
+    </div>\par
+    <div id="chat-section">\par
+        <h2>Chat Interface</h2>\par
+        <div id="chat-box"></div>\par
+        <input type="text" id="userInput">\par
+        <button onclick="sendMessage()">Send</button>\par
+    </div>\par
+    <script src="script.js"></script>\par
+</body>\par
+</html>\par
+**styles.css**css\par
+body \{\par
+    font-family: Arial, sans-serif;\par
+    margin: 20px;\par
+\}\par
+\par
+#upload-section, #chat-section \{\par
+    margin-bottom: 20px;\par
+\}\par
+\par
+#chat-box \{\par
+    border: 1px solid #ccc;\par
+    padding: 10px;\par
+    height: 200px;\par
+    overflow-y: scroll;\par
+    margin-bottom: 10px;\par
+\}\par
+**script.js**javascript\par
+function uploadFile() \{\par
+    const fileInput = document.getElementById('fileInput');\par
+    const file = fileInput.files[0];\par
+    const formData = new FormData();\par
+    formData.append('file', file);\par
+\par
+    fetch('/api/upload', \{\par
+        method: 'POST',\par
+        body: formData\par
+    \}).then(response => response.json())\par
+      .then(data => \{\par
+          alert('File uploaded successfully');\par
+      \}).catch(error => \{\par
+          console.error('Error uploading {{\field{\*\fldinst{HYPERLINK file:' }}{\fldrslt{file:'\ul0\cf0}}}}\f0\fs24 , error);\par
+      \});\par
+\}\par
+\par
+function sendMessage() \{\par
+    const userInput = document.getElementById('userInput').value;\par
+\par
+    fetch('/api/chat', \{\par
+        method: 'POST',\par
+        headers: \{\par
+            'Content-Type': 'application/json'\par
+        \},\par
+        body: JSON.stringify(\{ query: userInput \})\par
+    \}).then(response => response.json())\par
+      .then(data => \{\par
+          const chatBox = document.getElementById('chat-box');\par
+          chatBox.innerHTML += `<p><strong>You:</strong> $\{userInput\}</p>`;\par
+          chatBox.innerHTML += `<p><strong>Bot:</strong> $\{data.response\}</p>`;\par
+      \}).catch(error => \{\par
+          console.error('Error sending message:', error);\par
+      \});\par
+\}\par
+#### 3. Backend Development\par
+\par
+Create a Java project with Maven/Gradle.\par
+\par
+**pom.xml** (if using Maven)xml\par
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 {{\field{\*\fldinst{HYPERLINK http://maven.apache.org/xsd/maven-4.0.0.xsd }}{\fldrslt{http://maven.apache.org/xsd/maven-4.0.0.xsd\ul0\cf0}}}}\f0\fs24 ">\par
+    <modelVersion>4.0.0</modelVersion>\par
+    <groupId>com.example</groupId>\par
+    <artifactId>rag-chatbot</artifactId>\par
+    <version>1.0-SNAPSHOT</version>\par
+    <dependencies>\par
+        <dependency>\par
+            <groupId>org.springframework.boot</groupId>\par
+            <artifactId>spring-boot-starter-web</artifactId>\par
+        </dependency>\par
+        <dependency>\par
+            <groupId>org.springframework.boot</groupId>\par
+            <artifactId>spring-boot-starter-data-jpa</artifactId>\par
+        </dependency>\par
+        <!-- Add dependencies for Zilliz/Supabase and embedding model here -->\par
+    </dependencies>\par
+</project>\par
+**Application.java**java\par
+package com.example.ragchatbot;\par
+\par
+import org.springframework.boot.SpringApplication;\par
+import org.springframework.boot.autoconfigure.SpringBootApplication;\par
+\par
+@SpringBootApplication\par
+public class Application \{\par
+    public static void main(String[] args) \{\par
+        SpringApplication.run(Application.class, args);\par
+    \}\par
+\}\par
+**UploadController.java**java\par
+package com.example.ragchatbot.controller;\par
+\par
+import org.springframework.web.bind.annotation.*;\par
+import org.springframework.web.multipart.MultipartFile;\par
+\par
+@RestController\par
+@RequestMapping("/api")\par
+public class UploadController \{\par
+\par
+    @PostMapping("/upload")\par
+    public String uploadFile(@RequestParam("file") MultipartFile file) \{\par
+        // Logic to process file, convert to chunks, generate embeddings, and store in vector DB\par
+        return "File uploaded successfully";\par
+    \}\par
+\}\par
+**ChatController.java**java\par
+package com.example.ragchatbot.controller;\par
+\par
+import org.springframework.web.bind.annotation.*;\par
+\par
+@RestController\par
+@RequestMapping("/api")\par
+public class ChatController \{\par
+\par
+    @PostMapping("/chat")\par
+    public String chat(@RequestBody Map<String, String> request) \{\par
+        String query = request.get("query");\par
+        // Logic to handle chat query, use prompt engineering, and generate response\par
+        return "\{ \\"response\\": \\"This is a sample response.\\" \}";\par
+    \}\par
+\}\par
+#### 4. Embedding and Vector Database Integration\par
+\par
+For embeddings, you can use a library like sentence-transformers in Python to generate embeddings. Then, use the Java API to interact with the Vector DB.\par
+\par
+**EmbeddingService.java**java\par
+package com.example.ragchatbot.service;\par
+\par
+import org.springframework.stereotype.Service;\par
+\par
+@Service\par
+public class EmbeddingService \{\par
+\par
+    public void generateAndStoreEmbeddings(String text) \{\par
+        // Logic to generate embeddings and store in Vector DB\par
+    \}\par
+\}\par
+**ChatService.java**java\par
+package com.example.ragchatbot.service;\par
+\par
+import org.springframework.stereotype.Service;\par
+\par
+@Service\par
+public class ChatService \{\par
+\par
+    public String getResponse(String query) \{\par
+        // Logic to retrieve embeddings from Vector DB and generate response\par
+        return "This is a sample response.";\par
+    \}\par
+\}\par
+#### 5. README File\par
+\par
+Create a README.md file to document the project.\par
+\par
+**README.md**markdown\par
+# RAG Chatbot\par
+\par
+This project is a basic Retrieval-Augmented Generation (RAG) model AI chatbot using Java for the backend and HTML/CSS/JS for the frontend. The embeddings are stored in a vector database.\par
+\par
+## Features\par
+\par
+- Upload documents or text files for training the RAG model.\par
+- Simple chat interface for interacting with the chatbot.\par
+\par
+## Requirements\par
+\par
+- Java 11+\par
+- Maven\par
+- Node.js\par
+- Python (for generating embeddings)\par
+- Vector Database (Zilliz/Supabase)\par
+\par
+## Setup Instructions\par
+\par
+1. Clone the repository:\par
+   sh\par
+    git clone {{\field{\*\fldinst{HYPERLINK https://github.com/yourusername/rag-chatbot.git }}{\fldrslt{https://github.com/yourusername/rag-chatbot.git\ul0\cf0}}}}\f0\fs24\par
+    cd rag-chatbot\par
+   \par
+2. Install dependencies:\par
+   sh\par
+    mvn install\par
+   \par
+3. Run the backend server:\par
+   sh\par
+    mvn spring-boot:run\par
+   \par
+4. Open `index.html` in your browser to access the frontend.\par
+\par
+## Contributing\par
+\par
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.\par
+\par
+## License\par
+\par
+This project is licensed under the MIT License.\par
+### Conclusion\par
+\par
+This guide provides a basic framework for building a RAG model AI chatbot with Java backend and a simple frontend. The focus is on the integration of a vector database for storing embeddings and handling user queries using prompt engineering. Ensure to add detailed logic for embedding generation and retrieval according to the specific vector database and embedding model you choose to use.\f1\fs22\par
+}
+ 
